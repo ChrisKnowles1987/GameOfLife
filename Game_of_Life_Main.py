@@ -3,9 +3,9 @@ import random
 
 
 BOARD_SIZE = WIDTH, HEIGHT = 900, 900
-CELL = 50
+CELL = 10
 W, H = WIDTH // CELL, HEIGHT // CELL
-MAX_FPS = 10
+MAX_FPS = 5
 
 
 
@@ -43,17 +43,25 @@ def main():
         
         
         
-        newWorld = checkCells(oldWorld)
+        newWorld=checkCells(oldWorld)
         
-        print(newWorld)
+        #print(newWorld)
         for x in range(len(newWorld)):
             for y in range(len(newWorld[x])):
                 
                 if newWorld[x][y] == 1:
                     #print (oldWorld[x][y])
-                    p.draw.rect(display, p.Color("white"), (y * CELL, x * CELL, CELL, CELL) )
+                    if newWorld[x][y] == oldWorld[x][y]:
+                        p.draw.rect(display, p.Color("orange"), (y * CELL, x * CELL, CELL, CELL) )
+                    else:
+                        p.draw.rect(display, p.Color("white"), (y * CELL, x * CELL, CELL, CELL) )
+                        
                     #oldWorld = checkCells(oldWorld, x ,y)  
-        
+                if newWorld[x][y] == 0:
+                    #print (oldWorld[x][y])
+                    p.draw.rect(display, p.Color("black"), (y * CELL, x * CELL, CELL, CELL) )
+                    #oldWorld = checkCells(oldWorld, x ,y)
+        oldWorld = newWorld
         clock.tick(MAX_FPS)
         p.display.flip()          
         
@@ -75,14 +83,26 @@ def checkCells(oldWorld):
                 for i in neighbours:
                     if oldWorld[i[0]][i[1]] == 1:
                         neighbourCount += 1
-                        print( x, y, neighbourCount)
+                        #print( x, y, neighbourCount)
             
-                if oldWorld[x][y] ==1 and  (2 < neighbourCount >=4):
-                    newWorld[x][y] =0
-                elif oldWorld[x][y] == 0 and neighbourCount == 3:
-                    newWorld[x][y] = 1
+            
+#Any live cell with fewer than two live neighbours dies, as if by underpopulation.
+#Any live cell with two or three live neighbours lives on to the next generation.
+#Any live cell with more than three live neighbours dies, as if by overpopulation.
+#Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+
+                
+                if oldWorld[x][y] ==1:
+                    if neighbourCount < 2 or neighbourCount >3:
+                        newWorld[x][y] = 0
+                    else:
+                        newWorld[x][y] = 1
                 else:
-                    newWorld[x][y] = 0
+                    if neighbourCount == 3:
+                        newWorld[x][y] = 1
+                    
+                    
+               
     
     return newWorld
     
@@ -90,11 +110,11 @@ def checkCells(oldWorld):
     
                             
     
-def getValidNeighbours(newWorld, x ,y, neighbours):
+def getValidNeighbours(oldWorld, x ,y, neighbours):
     neighbours = []
     neighbourList= [[0, -1],[0, 1],[1, 0],[-1, 0],[1, 1],[-1, -1],[1, -1],[-1, 1]]
-    maxCol = len(newWorld[0])-1
-    maxRow = len(newWorld[1])-1
+    maxCol = len(oldWorld[0])-1
+    maxRow = len(oldWorld[1])-1
     for i in neighbourList:
         
         if (0 <= x +i[0]  <= (maxCol)) and (0 <= y + i[1]  <= (maxRow)):
